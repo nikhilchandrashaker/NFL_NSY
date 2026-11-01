@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Net Sack Yards — 2025 NFL Dashboard</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f9;--card:#fff;--tx:#14213d;--mut:#5b6577;--line:#e2e6ee;--acc:#1f4e9c;--pos:#2a7f62;--neg:#b8432f;--bar:#c9d6ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141c;--card:#18202c;--tx:#e8ecf3;--mut:#98a3b5;--line:#2a3445;--acc:#6ea0f0;--pos:#5cc4a0;--neg:#f08a74;--bar:#2c4166}}
+:root[data-theme="dark"]{--bg:#0f141c;--card:#18202c;--tx:#e8ecf3;--mut:#98a3b5;--line:#2a3445;--acc:#6ea0f0;--pos:#5cc4a0;--neg:#f08a74;--bar:#2c4166}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:0 0 4px}.sub{color:var(--mut);margin:0 0 16px;font-size:.9rem}
+.tabs{display:flex;gap:8px;margin-bottom:16px}.tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}.k b{display:block;font-size:1.4rem}.k span{color:var(--mut);font-size:.8rem}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.c h2{font-size:1rem;margin:0 0 4px}.c p{margin:0 0 10px;color:var(--mut);font-size:.82rem}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.g{grid-template-columns:1fr}}
+.row{display:grid;grid-template-columns:104px 1fr 44px;gap:8px;align-items:center;font-size:.8rem;padding:2px 0;cursor:pointer}
+.row.sel{background:var(--bar);border-radius:6px}.bt{height:12px;background:var(--bar);border-radius:3px;overflow:hidden}.bt i{display:block;height:100%;background:var(--acc)}
+.row span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.sc{overflow-x:auto}svg{width:100%;height:auto;display:block}svg text{fill:var(--mut);font-size:10px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:640px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th:first-child,td:first-child{text-align:left}
+th{cursor:pointer;color:var(--mut);position:sticky;top:0;background:var(--card)}th.s{color:var(--acc)}tr.sel td{background:var(--bar)}
+.n{color:var(--mut);font-size:.78rem;margin-top:8px}
+</style></head><body><div class="w">
+<h1>Net Sack Yards · 2025 NFL Regular Season</h1>
+<p class="sub" id="f"></p>
+<div class="tabs"><button id="td" class="on">Defense</button><button id="to">Offense</button></div>
+<div class="kpis" id="k"></div>
+<div class="g">
+<div class="c"><h2 id="bt"></h2><p id="bp"></p><div id="bars"></div></div>
+<div class="c"><h2>Sack yards vs. penalty yards</h2><p id="sp"></p><div class="sc"><svg id="sv" viewBox="0 0 400 340"></svg></div></div>
+</div>
+<div class="c"><h2>All 32 teams</h2><p>Click a column to sort; click a team to highlight it everywhere.</p><div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+<div class="n">Penalties = roughing the passer, defensive offside, neutral zone infraction (accepted, regular season). Sources: FOX Sports, NFL.com, NFLPenalties.com. Offside and neutral-zone fouls are a proxy; they are not tagged to pass-rush snaps.</div></div>
+</div>
+<script>
+const DATA={"d": [["Arizona", 30, 205, 2, 25, 5, 25, 3, 15, 65, 140], ["Atlanta", 57, 366, 1, 15, 4, 20, 2, 11, 46, 320], ["Baltimore", 30, 189, 0, 0, 3, 15, 3, 15, 30, 159], ["Buffalo", 36, 226, 1, 15, 2, 10, 1, 5, 30, 196], ["Carolina", 30, 190, 2, 30, 3, 15, 1, 5, 50, 140], ["Chicago", 35, 204, 9, 126, 4, 20, 2, 8, 154, 50], ["Cincinnati", 35, 200, 5, 45, 2, 10, 1, 5, 60, 140], ["Cleveland", 53, 377, 1, 15, 6, 29, 3, 12, 56, 321], ["Dallas", 35, 245, 3, 43, 8, 38, 2, 10, 91, 154], ["Denver", 68, 424, 5, 72, 9, 40, 2, 10, 122, 302], ["Detroit", 49, 332, 3, 43, 5, 25, 3, 16, 84, 248], ["Green Bay", 36, 216, 1, 8, 7, 34, 4, 21, 63, 153], ["Houston", 47, 366, 1, 15, 7, 31, 2, 10, 56, 310], ["Indianapolis", 39, 247, 3, 36, 2, 10, 1, 5, 51, 196], ["Jacksonville", 32, 226, 4, 46, 0, 0, 3, 15, 61, 165], ["Kansas City", 35, 158, 3, 38, 7, 35, 2, 10, 83, 75], ["LA Chargers", 45, 256, 2, 20, 6, 31, 2, 10, 61, 195], ["LA Rams", 47, 304, 4, 57, 1, 5, 4, 20, 82, 222], ["Las Vegas", 37, 227, 2, 30, 5, 25, 3, 16, 71, 156], ["Miami", 39, 242, 2, 30, 0, 0, 4, 20, 50, 192], ["Minnesota", 49, 327, 5, 67, 5, 25, 4, 20, 112, 215], ["NY Giants", 39, 266, 2, 30, 7, 34, 4, 20, 84, 182], ["NY Jets", 26, 175, 3, 44, 1, 1, 3, 15, 60, 115], ["New England", 35, 222, 2, 30, 3, 15, 2, 10, 55, 167], ["New Orleans", 45, 290, 4, 60, 5, 21, 4, 20, 101, 189], ["Philadelphia", 42, 250, 4, 60, 1, 5, 1, 5, 70, 180], ["Pittsburgh", 48, 291, 4, 60, 7, 34, 1, 5, 99, 192], ["San Francisco", 20, 159, 1, 1, 3, 15, 2, 10, 26, 133], ["Seattle", 47, 322, 4, 61, 3, 15, 0, 0, 76, 246], ["Tampa Bay", 37, 283, 4, 60, 7, 31, 1, 5, 96, 187], ["Tennessee", 42, 302, 2, 30, 7, 29, 4, 18, 77, 225], ["Washington", 42, 249, 3, 39, 6, 29, 1, 5, 73, 176]], "o": [["Arizona", 59, 399, 2, 23, 4, 15, 2, 11, 49, 350], ["Atlanta", 26, 180, 5, 74, 6, 30, 2, 10, 114, 66], ["Baltimore", 45, 293, 2, 28, 3, 11, 7, 34, 73, 220], ["Buffalo", 40, 298, 4, 46, 0, 0, 3, 15, 61, 237], ["Carolina", 35, 256, 3, 45, 4, 20, 2, 10, 75, 181], ["Chicago", 24, 165, 2, 28, 3, 15, 3, 15, 58, 107], ["Cincinnati", 36, 239, 1, 15, 8, 40, 4, 20, 75, 164], ["Cleveland", 51, 345, 6, 79, 4, 19, 2, 10, 108, 237], ["Dallas", 31, 208, 8, 108, 5, 21, 1, 5, 134, 74], ["Denver", 23, 124, 1, 15, 4, 19, 3, 15, 49, 75], ["Detroit", 39, 264, 1, 13, 4, 20, 2, 10, 43, 221], ["Green Bay", 29, 228, 4, 55, 3, 14, 1, 2, 71, 157], ["Houston", 31, 249, 3, 45, 3, 15, 1, 5, 65, 184], ["Indianapolis", 29, 212, 2, 30, 5, 21, 1, 5, 56, 156], ["Jacksonville", 41, 247, 4, 60, 2, 10, 2, 10, 80, 167], ["Kansas City", 47, 308, 4, 51, 3, 15, 4, 20, 86, 222], ["LA Chargers", 60, 345, 2, 17, 11, 55, 1, 5, 77, 268], ["LA Rams", 23, 150, 1, 1, 5, 24, 4, 19, 44, 106], ["Las Vegas", 64, 464, 2, 30, 8, 40, 2, 11, 81, 383], ["Miami", 38, 254, 1, 5, 3, 15, 2, 10, 30, 224], ["Minnesota", 60, 374, 4, 54, 6, 29, 1, 5, 88, 286], ["NY Giants", 48, 229, 7, 105, 8, 40, 7, 36, 181, 48], ["NY Jets", 60, 399, 3, 45, 5, 23, 2, 10, 78, 321], ["New England", 48, 201, 2, 30, 1, 5, 1, 5, 40, 161], ["New Orleans", 49, 299, 3, 42, 2, 10, 3, 15, 67, 232], ["Philadelphia", 35, 195, 1, 15, 5, 25, 3, 15, 55, 140], ["Pittsburgh", 31, 192, 2, 25, 1, 5, 1, 5, 35, 157], ["San Francisco", 27, 161, 2, 30, 4, 16, 0, 0, 46, 115], ["Seattle", 27, 186, 2, 30, 9, 46, 3, 14, 90, 96], ["Tampa Bay", 38, 255, 6, 77, 3, 10, 4, 20, 107, 148], ["Tennessee", 56, 417, 0, 0, 5, 24, 1, 5, 29, 388], ["Washington", 37, 200, 2, 30, 4, 20, 0, 0, 50, 150]]};
+const COLS=[["Team",0],["Sacks",1],["Sack yds",2],["RTP yds",4],["Off. yds",6],["NZI yds",8],["Penalty yds",9],["Net",10]];
+let v="d",sortI=10,asc=false,sel=null;
+const $=id=>document.getElementById(id);
+const L={d:{net:"Net sack yards",sk:"Sacks",sy:"Sack yards gained",pen:"Penalty yards surrendered",best:"higher is better"},
+         o:{net:"Net sack yards lost",sk:"Sacks taken",sy:"Sack yards lost",pen:"Penalty yards gained",best:"lower is better"}};
+const sum=i=>DATA[v].reduce((a,r)=>a+r[i],0);
+function rows(){return DATA[v].slice().sort((a,b)=>(typeof a[sortI]==="string"?a[sortI].localeCompare(b[sortI]):a[sortI]-b[sortI])*(asc?1:-1));}
+function render(){
+ const l=L[v],R=DATA[v];
+ $("f").textContent=(v==="d"?"Defense view: sack yards gained minus pass-rush penalty yards surrendered":"Offense view: sack yards lost minus pass-rush penalty yards gained")+" · "+l.best;
+ const avg=sum(10)/32;
+ $("k").innerHTML=[[sum(1).toLocaleString(),l.sk],[sum(2).toLocaleString(),l.sy],[sum(9).toLocaleString(),l.pen],[avg.toFixed(0),"League avg "+l.net.toLowerCase()],[Math.round(sum(9)/sum(2)*100)+"%","Penalty yds as % of sack yds"]].map(x=>`<div class="k"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+ $("bt").textContent=l.net+" by team";$("bp").textContent="Sorted best to worst ("+l.best+")";
+ const S=R.slice().sort((a,b)=>v==="d"?b[10]-a[10]:a[10]-b[10]),mx=Math.max(...R.map(r=>r[10]));
+ $("bars").innerHTML=S.map(r=>`<div class="row${sel===r[0]?" sel":""}" data-t="${r[0]}"><span>${r[0]}</span><div class="bt"><i style="width:${Math.max(r[10],0)/mx*100}%"></i></div><span>${r[10]}</span></div>`).join("");
+ $("sp").textContent=v==="d"?"Teams above the line give back more in penalties than sack yards they earn.":"Dot = one offense. Higher means more penalty yards drawn.";
+ const X=r=>36+r[2]/480*350,Y=r=>300-r[9]/200*280;let s=`<line x1="36" y1="300" x2="390" y2="300" stroke="currentColor" opacity=".3"/><line x1="36" y1="20" x2="36" y2="300" stroke="currentColor" opacity=".3"/>`;
+ [0,100,200,300,400].forEach(t=>s+=`<text x="${36+t/480*350}" y="316" text-anchor="middle">${t}</text>`);[0,50,100,150,200].forEach(t=>s+=`<text x="30" y="${300-t/200*280+3}" text-anchor="end">${t}</text>`);
+ s+=`<text x="213" y="334" text-anchor="middle">${l.sy}</text><text x="8" y="14">${l.pen}</text>`;
+ R.forEach(r=>{const on=sel===r[0];s+=`<circle data-t="${r[0]}" cx="${X(r)}" cy="${Y(r)}" r="${on?7:4.5}" fill="${on?"var(--neg)":"var(--acc)"}" opacity="${sel&&!on?.35:.85}"><title>${r[0]}: ${r[2]} / ${r[9]}</title></circle>`;if(on||["Chicago","Denver","Kansas City","NY Giants","Tennessee"].includes(r[0]))s+=`<text x="${X(r)+8}" y="${Y(r)+3}">${r[0]}</text>`;});
+ $("sv").innerHTML=s;
+ $("th").innerHTML="<tr>"+COLS.map(c=>`<th data-i="${c[1]}" class="${sortI===c[1]?"s":""}">${c[0]}${sortI===c[1]?(asc?" ▲":" ▼"):""}</th>`).join("")+"</tr>";
+ $("tb").innerHTML=rows().map(r=>`<tr data-t="${r[0]}" class="${sel===r[0]?"sel":""}">`+COLS.map(c=>`<td>${r[c[1]]}</td>`).join("")+"</tr>").join("");
+}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-t]"),h=e.target.closest("th");
+ if(h){const i=+h.dataset.i;asc=sortI===i?!asc:i===0;sortI=i;render();return}
+ if(t){sel=sel===t.dataset.t?null:t.dataset.t;render()}});
+$("td").onclick=()=>{v="d";$("td").className="on";$("to").className="";sortI=10;asc=false;render()};
+$("to").onclick=()=>{v="o";$("to").className="on";$("td").className="";sortI=10;asc=true;render()};
+render();
+</script></body></html>
